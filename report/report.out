@@ -1,0 +1,10 @@
+\BOOKMARK [1][-]{section.1}{The Ritz Method}{}% 1
+\BOOKMARK [1][-]{section.2}{Deep Ritz Method with neural networks}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Building trail function}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Euler numerical integration method}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{The stochastic gradient descent algorithm}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{Our improvements}{}% 6
+\BOOKMARK [2][-]{subsection.3.1}{L2 regularization}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.2}{Self adaptive}{section.3}% 8
+\BOOKMARK [1][-]{section.4}{Numerical Results}{}% 9
+\BOOKMARK [2][-]{subsection.4.1}{The Poisson Equation}{section.4}% 10
