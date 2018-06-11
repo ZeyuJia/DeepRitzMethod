@@ -44,7 +44,7 @@
   \And
   Dinghuai Zhang\\School of Mathematical Science\\Peking University
   \And
-  Zhengming Zou\\School of Mathematical Science\\Peking University
+  Zhengming Zou\\School of Mathematical Science\\Peking University \\ \texttt{1600011089}
 }
 
 \begin{document}
@@ -57,27 +57,66 @@
 
 
 \section{The Ritz Method}
+\par The Ritz method is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
+\begin{equation}
+y(x)=\varphi_0(x)+k_1\varphi_1(x)+...+\varphi_N(x)
+\end{equation}
+Where $\varphi_{i}(x),i\in\{1,2,...,N\}$  are a set of basis of a function space that we are interested in. In many cases, we use a complete set of functions such as, polynomials or sines and cosines. And $k_i,i\in\{1,2,...,N\}$ are constants to be determined by variational and linear algebraic method. But if we don't just solve the problem in a limited function space, things can be different. 
 
+\par Next we take the homogeneous Dirichlet boundary value problem of the Poisson equation as an example.
+\begin{equation}
+\left\{
+\begin{aligned}
+& \Delta u=-f(x),&x\in \Omega \\
+ &u=0,&x\in \partial \Omega \\
+ \end{aligned}
+\right.
+\end{equation}
+The weak solution corresponding to the principle of least action is
+\begin{equation}
+\left\{
+\begin{aligned}
+ \text{find }\ u\in H(\Omega), s.t.\\
+ I(u)=\min\limits_{v\in H(\Omega)}I(v)\\
+  \end{aligned}
+\right.
+\end{equation}
+Where $H$ is the set of admissible function. And using variational method, we can prove that 
+\begin{equation} 
+I(v)=\int_\Omega\left(\frac{1}{2}|\nabla v(x)|^2-f(x)v(x)\right)dx. 
+\end{equation}
+As a matter of fact, if we assume that v is an n-dimensional function, then
+\begin{equation}\label{d_I}
+\delta I(v)=\int _{\Omega} \left(\frac{\partial v}{\partial x_1}\cdot \delta \frac{\partial v}{\partial x_1}+...+\frac{\partial v}{\partial x_n}\cdot   \delta \frac{\partial v}{\partial x_n}-f(x)\delta      v(x)   \right)dx
+\end{equation}
+Using the integration by parts method for several items on the left,
+\begin{equation}\label{int_by_parts}
+\int _{\Omega}\frac{\partial v}{\partial x_1}\cdot \delta \frac{\partial v}{\partial x_1} dx= \frac{\partial v}{\partial x_1}\cdot \delta v\Big|_{\partial \Omega}-\int_{\Omega}\delta v \cdot \frac{\partial^2 v}{\partial x_1 ^2}dx=-\int_{\Omega}\delta v \cdot \frac{\partial^2 v}{\partial x_1 ^2}
+\end{equation}
+Substituting \eqref{int_by_parts} to \eqref{d_I}
+\begin{equation}
+\delta I(v)=-\int_{\Omega}\delta v(\Delta v+f(x))dx=0
+\end{equation}
 
 \section{Deep Ritz Method with neural networks}
-\par Using the Ritz Method mentioned above, it is natural to think of solving pde with deep neural networks. Considering the pde 
+\par Using the Ritz Method mentioned above, it is natural to think of solving pde with deep neural networks. Considering the PDE
 \begin{equation}
-\Delta u(x)=f(x),x\in \Omega
+\Delta u(x)+f(x)=0,\qquad x\in \Omega.
 \end {equation}
 \par According to Ritz Method, what we need to do is
 \begin{equation}
 \min\limits_{u\in H}{I(u)},
 \end{equation}
 where
-\begin{equation} 
-I(u)=\int_\Omega(\frac{1}{2}|\nabla u(x)|^2-f(x)u(x))dx,
+\begin{equation}\label{I_equ}
+I(u)=\int_\Omega\left(\frac{1}{2}|\nabla u(x)|^2-f(x)u(x)\right)dx,
 \end{equation}
 and $H$ is the set of admissible function. Our main idea is to facilitate the multi-layer neural network approximation function $u(x)$ and use the gradient descent algorithm to get the final result.\\
 
 \subsection{Building trail function}
 \par We mainly use a nonlinear transformation $x \to u_{\theta}(x)$ defined by deep neural networks to approximate function $u(x)$. Here $\theta$ denotes all parameters in our model. Similar to ResNet structure, we use several blocks to construct our networks, each block consists of two linear transformation, two activation functions and a residual connection. The $i$-th block can be expressed as 
-\begin{equation}\label{res_equ}
-s_i=\phi(W_{i2}\phi(W_{i1}s_{i_1}+b_{i1})+b_{i2})+s_{i-1}.
+\begin{equation}
+s_i=\phi(W_{i2}\cdot\phi(W_{i1}\cdot s_{i_1}+b_{i1})+b_{i2})+s_{i-1}.\label{res_equ}
 \end{equation}
 \thispagestyle{empty}
 % 流程图定义基本形状
@@ -119,19 +158,20 @@ where $s_{i}$ is the output of the $i$-th layer. $W_{i1},W_{i2}\in R^{m\times m}
 
 \par Because our pde involves the Laplace transform, we naturally hope that the second derivative of the function $u(x)$ is not a constant. So we need to pick a proper activation function to ensure the networks' nonlinearity. In our model, we have decided to use 
 \begin{equation}
-\phi(x)=\max\{x^3,0\}
+\phi(x)=\max\{x^3,0\} 
 \end{equation}
 
-\par The residual connection in \ref{res_equ} %这里需要一个跳转而且不一定是(4)% 
+\par The residual connection in (\ref{res_equ})
 helps to avoid the gradient vanishing problems.
 After several blocks, we use a linear transform to get the final result. The whole network can be expressed as
 \begin{equation}
 u_{\theta}(x)=a\cdot f_n(x) \circ ...\circ f_1(x)+b
 \end{equation}
-$f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear transform. Note that the input vector $x$ is not necessarily m-dimensional. In order to handle this mismatch, we can pad $x$ by a zero vector. In our model, we always assume $d<m$.\\
-After building our trail function, we are left to minimize the $I(u)$ in (3)%这里需要一个跳转而且不一定是(3)% 
+$f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear transform. Note that the input vector $x$ is not necessarily m-dimensional. In order to handle this mismatch, we can pad $x$ by a zero vector. In our model, we always assume $d<m$.
+\par After building our trail function, we are left to minimize the $I(u)$ in (\ref{I_equ})
+
 \subsection{Euler numerical integration method}
-The first problem we need to solve is to calculate the integral in (3)%这里需要一个跳转而且不一定是(3)% 
+\par The first problem we need to solve is to calculate the integral in (\ref{I_equ})
  . For simplicity, define:
  \begin{equation}
  g(x,\theta)=|\nabla u(x)|^2-f(x)u(x)
@@ -154,7 +194,7 @@ The first problem we need to solve is to calculate the integral in (3)%这里需
 
 
 \section{Our improvements}
-Along with the footsteps of professor E, we have achieved very good results. Based on the results already available, we want to make further improvements. 
+\par Along with the footsteps of professor E, we have achieved very good results. Based on the results already available, we want to make further improvements. 
 
 \subsection{L2 regularization}
 
@@ -182,8 +222,16 @@ u=\frac{1}{4}(x^2+y^2-1)
 
 \par As described above, we use three blocks(six fully connected layers ) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
 \begin{equation}
-I(u)=\int_{\Omega}(\frac{1}{2}|\nabla u(x)|^2-u(x))dx+\gamma\int_{\Omega}|\Delta u(x)|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
+I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x)|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
 \end{equation}
+Where $\gamma\int_{\Omega}|\Delta u(x)|^2dx$ is the regular term and we choose $\gamma=500$
+
+\section{Further discussion}
+
+\section*{References}
+\medskip
+
+\small
 
 
 
