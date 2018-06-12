@@ -42,7 +42,7 @@
 \author{
   Zeyu Jia\\School of Mathematical Science\\Peking University\\ \texttt{1600010603} \\
   \And
-  Dinghuai Zhang\\School of Mathematical Science\\Peking University
+  Dinghuai Zhang\\School of Mathematical Science\\Peking University\\ \texttt{1600013525}\\
   \And
   Zhengming Zou\\School of Mathematical Science\\Peking University \\ \texttt{1600011089}
 }
@@ -199,8 +199,13 @@ $f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear t
 \subsection{L2 regularization}
 
 \subsection{Self adaptive}
-
-
+\par In order to find out the tougher place and enhance the regularization, we use a self-adaptive regularization here. This idea is similar to adaptive finite element method, which refines the grid adaptively according to the difficulty of each grid. (this difficulty is described by the value of $f$ given the PDE $\Delta u = f$.) 
+\par Here we adopt the self adaptive method on both boundary and interior. Suppose one time the neural network function is $f(x) = \mathrm{NN}(x, \theta_k)$, then we will use the following adaptive method to sample:
+\begin{itemize}
+	\item For the boundary restrictions, we sample points according to density function $|f(x)|$ where $x$ is on the boundary of $\partial\Omega$.
+	\item For interior, we sample uniformly for the variation, and sample according to density function $|\Delta(x) - f(x)|$.
+\end{itemize}
+\par  According to this method, more points will be sampled at places where the neural network does not fit well, and less points will be sampled at places where the neural network fits well. 
 \section{Numerical Results}
 
 \subsection{The Poisson Equation}
@@ -220,11 +225,11 @@ Here $\Omega =\{(x,y)| x^2+y^2<1\}$.
 u=\frac{1}{4}(x^2+y^2-1)
 \end{equation}
 
-\par As described above, we use three blocks(six fully connected layers ) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
+\par As described above, we use three blocks (six fully connected layers) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
 \begin{equation}
-I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x)|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
+I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
 \end{equation}
-Where $\gamma\int_{\Omega}|\Delta u(x)|^2dx$ is the regular term and we choose $\gamma=500$
+Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and we choose $\gamma=500$.
 
 \section{Further discussion}
 
