@@ -229,7 +229,30 @@ u=\frac{1}{4}(x^2+y^2-1)
 \begin{equation}
 I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
 \end{equation}
-Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and we choose $\gamma=500$.
+Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and we choose $\gamma=500$ and $\beta\int_{\partial \Omega}u(x)^2dx$ is the penalty item.
+
+\subsection{The poisson equation in high dimension}
+As for high dimension equation, our model can also do well. Considering Poisson Equation in higher dimension:
+\begin{equation}
+\left \{
+\begin{aligned}
+&-\Delta u =0, &x\in (0,1)^{10} \\
+&u(x)=\sum\limits_{k=1}^5x_{2k-1}x_{2k}, &x\in \partial (0,1)^{10}
+\end{aligned}
+\right.
+\end{equation}
+The exact solution for this equation is 
+\begin{equation}
+u(x)=\sum\limits_{k=1}^5x_{2k-1}x_{2k}
+\end{equation}
+The network we used this time has the same structure as \ref{poisson_in_2d}. We still use three blocks (six fully connected layers) and a final linear transform with m = 10 to build our networks. But there are some differences in the penalty items. This time we let the learning rate increase with the number of iterations, which can lead to a better training results. The learning rate can be expressed as:
+\begin{equation}
+\beta=\beta_{0}^N
+\end{equation}
+Where $N$ is the number of iteration. We choose $\beta_0=1.01$.
+
+\subsection{Other Poisson Equation}
+
 
 \section{Further discussion}
 
