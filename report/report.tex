@@ -74,7 +74,7 @@ For long people meet great difficulty when solving numerical partial differentia
 \par In this report, what we focus on is Deep Ritz Method \cite{yu2017deep}. We derive the theory of this algorithm, give our own interpretations. Besides, we also proposed several novel ideas to this algorithm, including the self-adaptive sampling method and actor-critic self-adaptive sampling method. We also write our own numerical experiments and make some comparison between the original methods and methods we proposed.
 \par The plan of this report is as follows: In section 2, we will give a brief introduction of Ritz method, which is the basis of deep Ritz method. The structure of deep Ritz method will be showed in section 3. In section 4, our novelty to the deep Ritz method will be exhibited and illustrated. And finally in section 5, we will show the numerical experiments we done by ourselves and their interpretation.
 
-\section{The Ritz Method}
+\section{The Ritz Method}  % 这里我觉得需要一个Ritz Method的引用,Evans或者贾泽宇发的那本数值pde都可以
 \par The Ritz method is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
 \begin{equation}
 y(x)=\varphi_0(x)+k_1\varphi_1(x)+...+\varphi_N(x)
@@ -116,7 +116,7 @@ Substituting \eqref{int_by_parts} to \eqref{d_I}
 \delta I(v)=-\int_{\Omega}\delta v(\Delta v+f(x))dx=0
 \end{equation}
 
-\section{Deep Ritz Method with neural networks}
+\section{Deep Ritz Method with neural networks} %我觉得这里可以引下E老师的
 \par Using the Ritz Method mentioned above, it is natural to think of solving pde with deep neural networks. Considering the PDE
 \begin{equation}
 \Delta u(x)+f(x)=0,\qquad x\in \Omega.
@@ -146,7 +146,7 @@ where $s_{i}$ is the output of the $i$-th layer. $W_{i1},W_{i2}\in R^{m\times m}
 \phi(x)=\max\{x^3,0\} 
 \end{equation}
 
-\par The residual connection in (\ref{res_equ})
+\par The residual connection in (\ref{res_equ})   %这里引ResNet那篇
 helps to avoid the gradient vanishing problems.
 After several blocks, we use a linear transform to get the final result. The whole network can be expressed as
 \begin{equation}
@@ -155,7 +155,7 @@ u_{\theta}(x)=a\cdot f_n(x) \circ ...\circ f_1(x)+b
 $f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear transform. Note that the input vector $x$ is not necessarily m-dimensional. In order to handle this mismatch, we can pad $x$ by a zero vector. In our model, we always assume $d<m$.
 \par After building our trail function, we are left to minimize the $I(u)$ in (\ref{I_equ})
 
-\subsection{Euler numerical integration method}
+\subsection{Euler numerical integration method}   %这里可以引用??但不知道引用什么好
 \par The first problem we need to solve is to calculate the integral in (\ref{I_equ})
  . For simplicity, define:
  \begin{equation}
@@ -245,7 +245,36 @@ u=\frac{1}{4}(x^2+y^2-1)
 \begin{equation}
 I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
 \end{equation}
-Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and we choose $\gamma=500$ and $\beta\int_{\partial \Omega}u(x)^2dx$ is the penalty item.
+Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and $\beta\int_{\partial \Omega}u(x)^2dx$ is the penalty item.We choose $\beta=500$ and $\gamma=500$.
+\par After 400 iterations, the relative loss of our model is reduced to $1.3\%$. Our training results of Deep Ritz Method is shown in Figure \ref{3.1a}
+
+\begin{figure}[ht]
+ 	 \centering
+ 	 \includegraphics[width=0.6\textwidth]{3-1.png} 
+	 \caption {The results of Poisson Equation}
+	 \label{3.1a}
+\end{figure}
+As is shown from the figure, the dark color indicates that the absolute error between the numerical solution and the real solution is small, while the light color indicates that the absolute error between the numerical solution and the real solution is relatively large.Deep Ritz method performs well with this problem after 400 iterations.
+
+\par After testing models of different layers, we find that the 3-layers model with 671 parameters performed best on this problem. Our numerical results is shown in Table \ref{different layers of poisson equation}. Too many parameters may lead overfitting, limiting the performance of the networks.
+
+\begin{table}[htbp]
+\centering  
+\caption{Relative loss of different layers with Poisson Eqaution}
+\label{different layers of poisson equation}
+\begin{tabular}{ccc} 
+	\toprule  %添加表格头部粗线
+	Blocks Num&Parameters& Relative Loss\\
+	\midrule  %添加表格中横线
+	\\3 & 671&1.3\%
+	\\
+	\\
+	\\
+	\\
+	\bottomrule %添加表格底部粗线
+\end{tabular}
+\end{table}
+
 
 \subsection{The poisson equation in high dimension}
 As for high dimension equation, our model can also do well. Considering Poisson Equation in higher dimension:
@@ -268,6 +297,34 @@ The network we used this time has the same structure as \ref{poisson_in_2d}. We 
 Where $N$ is the number of iteration. We choose $\beta_0=1.01$.
 
 \subsection{Other Poisson Equation}
+\par Considering the following Poisson Equation:
+\begin{equation}
+\left\{
+\begin{aligned}
+& \Delta u=0, & x\in \Omega \\
+ &u=xy,   &x\in \partial \Omega \\
+ \end{aligned}
+\right.
+\end{equation}
+
+Here $\Omega =\{(x,y)| x^2+y^2<1\}$.
+\par The exact solution to this problem is 
+\begin{equation}
+u=xy
+\end{equation}
+Compared with the equation in \ref{functional}, there are some differences in the penalty items. This time we let the learning rate increase with the number of iterations, which can lead to a better training results. The learning rate can be expressed as:
+\begin{equation}
+\beta=\beta_{0}^N
+\end{equation}
+Where $N$ is the number of iteration.After a few attempts, we choose $\beta_0=1.01$. After 5000 iterations, the relative loss of our model is reduced to 1.4\%. Our training result is shown in Figure \ref{3.2a}
+\begin{figure}[ht]
+ 	 \centering
+ 	 \includegraphics[width=0.6\textwidth]{3-2.png} 
+	 \caption {The results of Poisson Equation}
+	 \label{3.2a}
+\end{figure}
+
+Same as before, the color depth in the graph reflects the absolute error from the exact value.
 
 
 \section{Further discussion}
