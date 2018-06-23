@@ -1,0 +1,49 @@
+\begin{figure}
+	\centering
+	\setlength{\belowcaptionskip}{10pt}
+	\caption{Network Structure of Deep Ritz Method}
+	\label{architecture}
+	\tikzstyle{startstop} = [rectangle, rounded corners, minimum width = 2cm, minimum height=1cm,text centered, draw = black, fill=red]
+	\tikzstyle{io} = [trapezium, trapezium left angle=80, rounded corners = 2mm, trapezium right angle=100, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=purple!50]
+	\tikzstyle{process} = [rectangle, rounded corners = 2mm, minimum width=3cm, minimum height=0.5cm, text centered, draw=black, fill=pink!50]
+	\tikzstyle{decision} = [diamond, aspect = 3, text centered, draw=black, fill=blue!30, align = center]
+	\tikzstyle{add} = [rectangle, minimum size=6mm, rounded corners=3mm, very thick, draw=black!50, top color=white, bottom color=black!20]
+	% 箭头形式
+	\tikzstyle{arrow} = [->,>=stealth]
+	\begin{tikzpicture}[node distance = 1cm]
+	%定义流程图具体形状
+	\node[io,  yshift = -1cm](in1){Input};
+	\node(fc11) [process, below of = in1, yshift = -0.3cm]{FC layer(size m)};
+	\node(fc12) [process, below of = fc11]{Activate};
+	\node(add1) [add, below of = fc12]{+};
+	\node(fc21) [process, below of = add1]{FC layer(size m)};
+	\node(fc22) [process, below of = fc21]{Activate};
+	\node(add2) [add, below of = fc22]{+};
+	\node(fc31) [process, below of = add2]{FC layer(size m)};
+	\node(fc32) [process, below of = fc31]{Activate};
+	\node(add3) [add, below of = fc32]{+};
+	\node(residual 1) [decision, right of = fc11, xshift = 5cm, yshift= -0.5cm]{Residue\\Connection};
+	\node(residual 2) [decision, right of = fc21, xshift = 5cm, yshift= -0.5cm]{Residue\\Connection};
+	\node(residual 3) [decision, right of = fc31, xshift = 5cm, yshift= -0.5cm]{Residue\\Connection};
+	\node(fc4) [process, below of = add3]{FC layer(size 1) };
+	\node(out1) [io, below of = fc4, yshift = -0.3cm]{Output};
+	%连接具体形状
+	\draw [arrow] (in1) -- (fc11);
+	\draw [arrow] (0, -1.8) -| node  [right] {} (residual 1);
+	\draw [arrow] (fc11) -- (fc12);
+	\draw [arrow] (fc12) -- (add1);
+	\draw [arrow] (residual 1) |- node [right] {} (add1);
+	\draw [arrow] (add1) -- (fc21);
+	\draw [arrow] (0, -4.8) -| node  [right] {} (residual 2);
+	\draw [arrow] (fc21) -- (fc22);
+	\draw [arrow] (fc22) -- (add2);
+	\draw [arrow] (residual 2) |- node [right] {} (add2);
+	\draw [arrow] (add2) -- (fc31);
+	\draw [arrow] (0, -7.8) -| node  [right] {} (residual 3);
+	\draw [arrow] (fc31) -- (fc32);
+	\draw [arrow] (fc32) -- (add3);
+	\draw [arrow] (residual 3) |- node [right] {} (add3);
+	\draw [arrow] (add3) -- (fc4);
+	\draw [arrow] (fc4) -- (out1);
+	\end{tikzpicture}
+\end{figure}

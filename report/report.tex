@@ -24,6 +24,9 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
 % \usepackage{palatino}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
@@ -55,6 +58,20 @@
 \begin{abstract}
 \end{abstract}
 
+\section{Introduction}
+\par Partial differential equation \cite{evans1998partial} is an important tool to characterize our world mathematically. From physics to chemistry, or from financial to engineering, partial differential equations always play a indispensable role. However, the partial differential equation is always very hard to solve, and most of time it is impossible. So in practice, we often find some ways to simplify the original partial differential equations, and solve it. To achieve this goal, we need to figure out some ways to solve these simplified partial differential equations, or at least, find their approximate solutions.
+\par The simplified partial differential equation we are going to discuss in this report is the Poisson equation 
+\eqref{poisson}
+\begin{equation}\label{poisson}
+	\begin{cases}
+		\Delta u = f, \qquad\forall x\in\Omega,\\
+		u = g, \qquad\forall x\in\partial\Omega.
+	\end{cases}
+\end{equation}
+\par The traditional partial differential solving methods include finite difference method \cite{strikwerda2004finite}, finite volume method \cite{versteeg2007introduction} and finite element method \cite{brenner2007mathematical}. These method are the most commonly used method in solving partial differential equations. And complete theories for these methods, such as consistency, stability and convergence, have been well established. However, these method will become tough, even impossible, to complex functions or high dimension situation. Even though the convergence still holds, the time complexity it guarantees will not permit such enormous calculations. Thus, we need to develop some method to tackle these difficulties.
+\par Deep learning \cite{lecun2015deep} has been well developed recently. Benefited from its well approximating ability, flexibility and fine solution to the curse of dimensionality, we have achieved state of art on so many missions, such as classification, object detection and so on. So it is natural to think about a suitable way to use deep learning to solve partial differential equations. \cite{yu2017deep} proposed a method to approximate the solution by a neural network, and use the well-know Ritz method to solve the variational problem. \cite{1707.02568}\cite{weinan2017deep}\cite{beck2017machine} first transfer partial differential equations into backward stochastic differential equations, and then use neural network or other machine learning methods to approximate their solutions.
+\par In this report, what we focus on is Deep Ritz Method \cite{yu2017deep}. We derive the theory of this algorithm, give our own interpretations. Besides, we also proposed several novel ideas to this algorithm, including the self-adaptive sampling method and actor-critic self-adaptive sampling method. We also write our own numerical experiments and make some comparison between the original methods and methods we proposed.
+\par The plan of this report is as follows: In section 2, we will give a brief introduction of Ritz method, which is the basis of deep Ritz method. The structure of deep Ritz method will be showed in section 3. In section 4, our novelty to the deep Ritz method will be exhibited and illustrated. And finally in section 5, we will show the numerical experiments we done by ourselves and their interpretation.
 
 \section{The Ritz Method}
 \par The Ritz method is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
@@ -118,43 +135,10 @@ and $H$ is the set of admissible function. Our main idea is to facilitate the mu
 \begin{equation}
 s_i=\phi(W_{i2}\cdot\phi(W_{i1}\cdot s_{i_1}+b_{i1})+b_{i2})+s_{i-1}.\label{res_equ}
 \end{equation}
-\thispagestyle{empty}
-% 流程图定义基本形状
-	\begin{figure}
-	\caption{Network Structure of Deep Ritz Method}
-	\centering
-	\tikzstyle{startstop} = [rectangle, rounded corners, minimum width = 2cm, minimum height=1cm,text centered, draw = black, fill=red]
-	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=purple]
-	\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=0.5cm, text centered, draw=black, fill=pink]
-	\tikzstyle{decision} = [diamond, aspect = 3, text centered, draw=black, fill=blue]
-	% 箭头形式
-	\tikzstyle{arrow} = [->,>=stealth]
-	\begin{tikzpicture}[node distance=1cm]
-	%定义流程图具体形状
-	\node[io,  yshift = -1cm](in1){Input};
-	\node[process, below of = in1, yshift = -0.5cm](fc1){FC layer(size m) + activation function};
-	\node[process, below of = fc1, yshift = -0.5cm](fc2){FC layer(size m) + activation function};
-	\node[decision, right  of = fc1, xshift = 5cm, yshift= -1cm](residual 1){Decision 1 ?};
-	\node[process, below of = fc2 , yshift = -0.5cm](fc3){FC layer(size m) + activation function};
-	\node[process, below of = fc3, yshift = -0.5cm](fc4){FC layer(size m) + activation function};
-	\node[decision, right  of = fc3, xshift = 5cm, yshift= -1cm](residual 2){Decision 1 ?};
-	\node[process, below of = fc4, yshift = -0.5cm](fc5){FC layer(size 1) };
-	\node[io, below of = fc5, yshift = -0.5cm](out1){Output};
-	\coordinate (point1) at (-3cm, -6cm);
-	%连接具体形状
-	\draw [arrow] (in1) -- (fc1);
-	\draw [arrow] (in1) -| node  [right] {} (residual 1);
-	\draw [arrow] (fc1) -- (fc2);
-	\draw [arrow] (fc2) -- (fc3);
-	\draw [arrow] (fc3) -- (fc4);
-	\draw [arrow] (fc4) -- (fc5);
-	%\draw (residual 1) -- node [above] {Y} (point1);
-	\draw [arrow] (residual 1) |- node [right] {} (fc3);
-	\draw [arrow] (fc3) -- (out1);
-	\end{tikzpicture}
-\end{figure}
 
 where $s_{i}$ is the output of the $i$-th layer. $W_{i1},W_{i2}\in R^{m\times m},b_{i1},b_{i2}\in R^{m}$ are defined by linear transformation. $\phi$ is the activation function.
+
+\input{architecture}
 
 \par Because our pde involves the Laplace transform, we naturally hope that the second derivative of the function $u(x)$ is not a constant. So we need to pick a proper activation function to ensure the networks' nonlinearity. In our model, we have decided to use 
 \begin{equation}
@@ -210,8 +194,32 @@ $f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear t
 \subsection{Actor-critic Self-adaptive Sampling}
 \par From the numerical experiments of self-adaptive sampling method, we find out that the self-adaptive method works better. However, there is one problem is involved in the self-adaptive sampling method. That is, we actually do not know which distribution of sampling is the most suitable way, and can achieve the best regularization effect. In the discussion of the last subsection, we choose the distribution to be proportional to the error between $\Delta(x)$ and $f(x)$. This choice seems plausible, but we cannot make sure that the error we choose in this way is perfect. Hence we introduce the following actor-critic way to sampling.
 \par Actor-critic \cite{konda2000actor} is a famous method in reinforcement learning. The core idea is similar to generative adversarial networks (GAN) \cite{goodfellow2014generative}, both of which design two networks, an actor (generative) network and a critic (discriminator). The task of the actor is to generate a distribution or a policy, and the task of the critic is to analyze the difference between the generated distribution and the real distribution.
-\par In this settings, we use the actor to generate a distribution which can be used for sampling points for regularization, as we discussed above. The actor is a network whose input is the original network's parameters, and the output is the  However, in our settings, distinguished from \cite{goodfellow2014generative} \cite{konda2000actor}, we use the critic network to test the effectiveness of the sampling distribution generated by the actor. The effectiveness of the sampling can be viewed from the decreasing of variational losses. 
-\par For simplicity, we only discussed about the self-adaptive sampling method on the boundary. Suppose the generated distribution is $\pi$, where $\pi(x)$ denotes the density and $x\in\partial\Omega$. We also generated a 
+\par In this settings, we use the actor to generate a distribution which can be used for sampling points for regularization, as we discussed above. The actor is a network whose takes the approximate error as input and output the sampling distribution. As for critic network in our settings, distinguished from \cite{goodfellow2014generative} \cite{konda2000actor}, we use the critic network to test the effectiveness of the sampling distribution generated by the actor. The effectiveness of the sampling can be viewed from the decreasing of variational losses. 
+\par For simplicity, we only discussed about the self-adaptive sampling method on the boundary. Suppose the generated distribution is $\pi(\theta_a)$, where $\pi(x, \theta_{a})$ denotes the density at $x$ on $\partial\Omega$. Then the form of actor is
+\begin{equation}
+	\pi(x) = \phi(|f(x)-0|), \qquad \forall x\in\partial\Omega,
+\end{equation}
+where $|f(x) - 0|$ is the approximate error on the boundary.
+\par As for the critic network, its purpose is to judge the effect of distribution the actor generated. To reduce the effect of randomness, we do not use random sampling points to train this network and use uniform grids instead. In this way, we can obtain the loss to real solutions. (we always train our neural networks with PDEs with real solutions) Compares with deep Ritz method, we also try some numerical methods, such as finite difference method or finite element method. In these method, theories of convergence guarantee the convergence speed of simple solutions, but these theories fail when the functions are rather complicated. Hence it is suitable to use the solutions of these numerical methods to train the neural network. The whole process can be viewed in algorithm 
+\ref{ac-algorithm} and figure \ref{ac-figure}
+\begin{algorithm}
+	\caption{Actor-critic Self-adaptive Training}
+	\label{ac-algorithm}
+	\begin{algorithmic}[1]
+		\State\textbf{Input} Domain $\Omega$, $m, t$.
+		\State Generate some rather simple functions $f_1, f_{2}, \cdots, f_{m}$ defined on $\Omega$. And find the solutions $w_{1}, \cdots, w_{m}$ to corresponding Possion equations.
+		\State Solve these partial differential equations finite difference method or finite element method with different grid sizes. And obtain approximate solutions $v_{1}^{j}, \cdots, v_{m}^{j}, 1\le j\le t$
+		\State For each $1\le i\le m$, find $t$ solutions $u_{i}^{1}, \cdots, u_{i}^{t}$.
+		\State Use the current actor network parameter $\theta_{a}$ to generate distributions for $u_{i}^{1}, \cdots, u_{i}^{t}$.
+		\State Train the original network with these distribution to obtain $u_{i}'^{1}, \cdots, u_{i}'^{t}$.
+		\State Put $u_{i}'^{j}$ and $w_{i}$ into the critic network with parameter $\theta_{c}$, and obtain the loss $\mathcal{L}_{i}^{j}$.
+		\State Put $v_{i}^{j}$ and $w_{i}$ into the critic network with parameter $\theta_{c}$, and obtain the loss $L_{i}^{j}$.
+		\State Train $\theta_{a}$ to minimize the sum of loss $\mathcal{L}_{i}^{j}$
+		\State Train $\theta_{c}$ to discriminate $\mathcal{L}_{i}^{j}$ from $L_{i}^{k}$
+ 	\end{algorithmic}
+\end{algorithm}
+
+\input{ac}
 
 \section{Numerical Results}
 
