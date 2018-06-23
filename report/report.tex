@@ -56,6 +56,7 @@
 \maketitle
 
 \begin{abstract}
+For long people meet great difficulty when solving numerical partial differential equations (PDEs), especially in high-dimensional conditions. Based on E and Yu's prior work, we explore and improve a way to solve a certain kind of PDE using variational methods and deep neural networks. With residual blocks and stochastic gradient descent, it works well in both low-dimensional and high-dimensional conditions. Besides, our improvement makes the result much better.
 \end{abstract}
 
 \section{Introduction}
@@ -270,6 +271,35 @@ Where $N$ is the number of iteration. We choose $\beta_0=1.01$.
 
 
 \section{Further discussion}
+
+\section{Conclusion and Discussions}
+
+In this project report, we demonstrate that our method is simple but effective when solving a certain series of PDEs. What's more, we can achieve higher accuracy with proper improvement as follows:
+
+\begin{enumerate}
+\item
+%I don't know how to descibe (\delta u - f) !!
+Add a regularization term to punish the norm of lapacian operator. 
+\item
+Adjust loss coeffecients according to it's shift from  extreme value. We call it \emph{adaptive} method.
+\item
+Introduce reinforcement learning to adjust the adaptive coeffecients.
+\end{enumerate}
+
+While having achieved fairish results, there exist many drawbacks and probable amelioration which we will handle in the future work:
+
+%maybe more ``future work'' can be added here.
+\begin{enumerate}
+\item
+Our method is not robust enough for general application. Sometimes much tuning work is needed for a single PDE.
+\item
+
+\item
+
+\end{enumerate}
+
+\section*{Acknowledgement}
+%Thanks luyiping
 
 \bibliography{reference}
 \bibliographystyle{plain}
