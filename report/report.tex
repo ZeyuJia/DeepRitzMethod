@@ -250,7 +250,7 @@ Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and $\beta\
 
 \begin{figure}[ht]
  	 \centering
- 	 \includegraphics[width=0.6\textwidth]{3-1.png} 
+ 	 \includegraphics[width=0.6\textwidth]{./images/loss_3-1.eps} 
 	 \caption {The results of Poisson Equation}
 	 \label{3.1a}
 \end{figure}
@@ -307,7 +307,7 @@ Where $N$ is the number of iteration. We choose $\beta_0=1.01$.
 \right.
 \end{equation}
 
-Here $\Omega =\{(x,y)| x^2+y^2<1\}$.
+Here $\Omega =\{(x,y)| 0<x,y<1\}$.
 \par The exact solution to this problem is 
 \begin{equation}
 u=xy
@@ -319,7 +319,7 @@ Compared with the equation in \ref{functional}, there are some differences in th
 Where $N$ is the number of iteration.After a few attempts, we choose $\beta_0=1.01$. After 5000 iterations, the relative loss of our model is reduced to 1.4\%. Our training result is shown in Figure \ref{3.2a}
 \begin{figure}[ht]
  	 \centering
- 	 \includegraphics[width=0.6\textwidth]{3-2.png} 
+ 	 \includegraphics[width=0.6\textwidth]{./images/loss_yubing.eps} 
 	 \caption {The results of Poisson Equation}
 	 \label{3.2a}
 \end{figure}
