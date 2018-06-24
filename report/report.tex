@@ -75,7 +75,7 @@
 \par The plan of this report is as follows: In section 2, we will give a brief introduction to Ritz method, which is the basis of deep Ritz method. The structure of deep Ritz method will be shown in section 3. In section 4, our novelty to the deep Ritz method will be exhibited and illustrated. And finally in section 5, we will present the numerical experiments we have done by ourselves and their interpretation.
 
 \section{The Ritz Method}  % 这里我觉得需要一个Ritz Method的引用,Evans或者贾泽宇发的那本数值pde都可以
-\par The Ritz method \cite{evans1998partial} is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
+\par The Ritz method \cite{evans1998partial} is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$ that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
 \begin{equation}
 y(x)=\varphi_0(x)+k_1\varphi_1(x)+...+\varphi_N(x)
 \end{equation}
@@ -101,7 +101,7 @@ The weak solution corresponding to the principle of least action is
 \end{equation}
 Where $H$ is the set of admissible function. And using variational method, we can prove that 
 \begin{equation} 
-I(v)=\int_\Omega\left(\frac{1}{2}|\nabla v(x)|^2-f(x)v(x)\right)dx. 
+I(v)=\int_\Omega\left(\frac{1}{2}|\nabla v(x)|^2-f(x)v(x)\right)dx 
 \end{equation}
 As a matter of fact, if we assume that v is an n-dimensional function, then
 \begin{equation}\label{d_I}
@@ -155,7 +155,7 @@ u_{\theta}(x)=a\cdot f_n(x) \circ ...\circ f_1(x)+b
 $f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear transform. Note that the input vector $x$ is not necessarily m-dimensional. In order to handle this mismatch, we can pad $x$ by a zero vector. In our model, we always assume $d<m$.
 \par After building our trail function, we are left to minimize the $I(u)$ in (\ref{I_equ})
 
-\subsection{Euler numerical integration method}   %这里可以引用??但不知道引用什么好
+\subsection{Euler numerical integration method}   
 \par The first problem we need to solve is to calculate the integral in (\ref{I_equ})
  . For simplicity, define:
  \begin{equation}
