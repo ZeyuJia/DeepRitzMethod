@@ -75,108 +75,108 @@
 \par The plan of this report is as follows: In section 2, we will give a brief introduction to Ritz method, which is the basis of deep Ritz method. The structure of deep Ritz method will be shown in section 3. In section 4, our novelty to the deep Ritz method will be exhibited and illustrated. And finally in section 5, we will present the numerical experiments we have done by ourselves and their interpretation.
 
 \section{The Ritz Method}  % 这里我觉得需要一个Ritz Method的引用,Evans或者贾泽宇发的那本数值pde都可以
-\par The Ritz method \cite{evans1998partial} is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$ that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
+\par The Ritz method \cite{evans1998partial} is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations in a function space. When we aim to seek a function $y(x)$ that maximize or minimize an integral $I(y(x))$. Suppose that we can approximate $y(x)$ with a linear combination of some linear independent functions:
 \begin{equation}
-y(x)=\varphi_0(x)+k_1\varphi_1(x)+...+\varphi_N(x)
+	y(x)=\varphi_0(x)+k_1\varphi_1(x)+...+\varphi_N(x).
 \end{equation}
-Where $\varphi_{i}(x),i\in\{1,2,...,N\}$  are a set of basis of a function space that we are interested in. In many cases, we use a complete set of functions such as, polynomials or sines and cosines. And $k_i,i\in\{1,2,...,N\}$ are constants to be determined by variational and linear algebraic method. But if we don't just solve the problem in a limited function space, things can be different. 
-
-\par Next we take the homogeneous Dirichlet boundary value problem of the Poisson equation as an example.
+Where $\varphi_{i}(x),i\in\{1,2,...,N\}$ are a basis of the function space we are interested in. In many cases, we use the basis 
 \begin{equation}
-\left\{
-\begin{aligned}
-& \Delta u=-f(x),&x\in \Omega \\
- &u=0,&x\in \partial \Omega \\
- \end{aligned}
-\right.
+	\begin{aligned}
+		\cos x, \cos 2x, \cdots, \cos nx, \cdots\\
+		\sin x, \sin 2x, \cdots, \sin nx, \cdots
+	\end{aligned}
 \end{equation}
-The weak solution corresponding to the principle of least action is
-\begin{equation}
-\left\{
-\begin{aligned}
- \text{find }\ u\in H(\Omega), s.t.\\
- I(u)=\min\limits_{v\in H(\Omega)}I(v)\\
-  \end{aligned}
-\right.
+However, this basis is of infinite dimension, which means it is very tough to solve. So we always restrict our solutions space in finite dimension.
+\par Next we take the homogeneous Dirichlet boundary value problem of the Poisson equation \eqref{possion_equation} as an example.
+\begin{equation}\label{possion_equation}
+	\begin{cases}
+ 		\Delta u=-f(x), & x\in \Omega, \\
+ 		u=0, & x\in \partial \Omega. \\
+ 	\end{cases}
 \end{equation}
-Where $H$ is the set of admissible function. And using variational method, we can prove that 
-\begin{equation} 
-I(v)=\int_\Omega\left(\frac{1}{2}|\nabla v(x)|^2-f(x)v(x)\right)dx 
+The weak solution of \eqref{possion_equation} corresponding to the principle of least action is
+\begin{equation}\label{variational problem}
+	\begin{cases}
+ 		\text{Find }\ u\in H_{0}(\Omega),\quad s.t.\\
+ 		I(u)=\min\limits_{v\in H_{0}(\Omega)} I(v),\\
+  	\end{cases}
 \end{equation}
-As a matter of fact, if we assume that v is an n-dimensional function, then
+where $H_{0}(\Omega)$ is the set of admissible functions. Using variational method, we can prove that 
+\begin{equation}\label{functional_I}
+I(v)=\int_\Omega\left(\frac{1}{2}|\nabla v(x)|^2-f(x)v(x)\right)dx. 
+\end{equation}
+As a matter of fact, if we assume that $v$ is an n-dimensional function, then
 \begin{equation}\label{d_I}
-\delta I(v)=\int _{\Omega} \left(\frac{\partial v}{\partial x_1}\cdot \delta \frac{\partial v}{\partial x_1}+...+\frac{\partial v}{\partial x_n}\cdot   \delta \frac{\partial v}{\partial x_n}-f(x)\delta      v(x)   \right)dx
+\delta I(v)=\int _{\Omega} \left(\frac{\partial v}{\partial x_1}\cdot \delta \frac{\partial v}{\partial x_1}+...+\frac{\partial v}{\partial x_n}\cdot   \delta \frac{\partial v}{\partial x_n}-f(x)\delta      v(x)   \right)dx.
 \end{equation}
-Using the integration by parts method for several items on the left,
+Using the integration by parts method for several integrals,
 \begin{equation}\label{int_by_parts}
-\int _{\Omega}\frac{\partial v}{\partial x_1}\cdot \delta \frac{\partial v}{\partial x_1} dx= \frac{\partial v}{\partial x_1}\cdot \delta v\Big|_{\partial \Omega}-\int_{\Omega}\delta v \cdot \frac{\partial^2 v}{\partial x_1 ^2}dx=-\int_{\Omega}\delta v \cdot \frac{\partial^2 v}{\partial x_1 ^2}
+\int _{\Omega}\frac{\partial v}{\partial x_i}\cdot \delta \frac{\partial v}{\partial x_i} dx= \frac{\partial v}{\partial x_i}\cdot \delta v\Big|_{\partial \Omega}-\int_{\Omega}\delta v \cdot \frac{\partial^2 v}{\partial x_i ^2}dx=-\int_{\Omega}\delta v \cdot \frac{\partial^2 v}{\partial x_i ^2}. \qquad 1\le i\le n
 \end{equation}
-Substituting \eqref{int_by_parts} to \eqref{d_I}
+Substituting \eqref{int_by_parts} into \eqref{d_I} we can obtain the following equation.
 \begin{equation}
 \delta I(v)=-\int_{\Omega}\delta v(\Delta v+f(x))dx=0
 \end{equation}
+\par Because of the strongly convexity of the functional $I$ in \eqref{functional_I}, the solution of \eqref{variational problem} is unique. Hence the solution of \eqref{variational problem} is identical to \eqref{possion_equation}.
 
-\section{Deep Ritz Method with neural networks} %我觉得这里可以引下E老师的
-\par Using the Ritz Method mentioned above, it is natural to think of solving pde with deep neural networks. Considering the PDE
+\section{Deep Ritz Method with neural networks}
+\par Using the Ritz Method mentioned above, it is natural to think of solving partial differential equations with deep neural networks. Considering the partial differential equation
 \begin{equation}
 \Delta u(x)+f(x)=0,\qquad x\in \Omega.
 \end {equation}
 \par According to Ritz Method, what we need to do is
-\begin{equation}
+\begin{equation}\label{optimization problem}
 \min\limits_{u\in H}{I(u)},
 \end{equation}
 where
 \begin{equation}\label{I_equ}
 I(u)=\int_\Omega\left(\frac{1}{2}|\nabla u(x)|^2-f(x)u(x)\right)dx,
 \end{equation}
-and $H$ is the set of admissible function. Our main idea is to facilitate the multi-layer neural network approximation function $u(x)$ and use the gradient descent algorithm to get the final result.\\
+and $H$ is the set of admissible function. Our main idea is to facilitate the multi-layer neural network approximation function $u(x)$ and use the stochastic gradient descent algorithm to solve the optimization problem \eqref{optimization problem}.
 
-\subsection{Building trail function}
-\par We mainly use a nonlinear transformation $x \to u_{\theta}(x)$ defined by deep neural networks to approximate function $u(x)$. Here $\theta$ denotes all parameters in our model. Similar to ResNet structure, we use several blocks to construct our networks, each block consists of two linear transformation, two activation functions and a residual connection. The $i$-th block can be expressed as 
-\begin{equation}
-s_i=\phi(W_{i2}\cdot\phi(W_{i1}\cdot s_{i_1}+b_{i1})+b_{i2})+s_{i-1}.\label{res_equ}
+\subsection{Building Trail Function}
+\par We use a nonlinear transformation $x \to u_{\theta}(x)$ defined by deep neural networks to approximate function $u(x)$. Here $\theta$ denotes network parameters in our model. Similar to ResNet structure, we use several blocks to construct our networks, where each block consists of two linear transformations, two activation functions and one residual connection. The $i$-th block can be expressed as 
+\begin{equation}\label{res_equ}
+	s_i=\phi(W_{i2}\cdot\phi(W_{i1}\cdot s_{i_1}+b_{i1})+b_{i2})+s_{i-1},
 \end{equation}
 
-where $s_{i}$ is the output of the $i$-th layer. $W_{i1},W_{i2}\in R^{m\times m},b_{i1},b_{i2}\in R^{m}$ are defined by linear transformation. $\phi$ is the activation function.
+where $s_{i}$ is the output of the $i$-th layer, $W_{i1},W_{i2}\in R^{m\times m},b_{i1},b_{i2}\in R^{m}$ and $\phi$ is the activation function.
 
 \input{architecture}
 
-\par Because our pde involves the Laplace transform, we naturally hope that the second derivative of the function $u(x)$ is not a constant. So we need to pick a proper activation function to ensure the networks' nonlinearity. In our model, we have decided to use 
-\begin{equation}
-\phi(x)=\max\{x^3,0\} 
+\par Because our partial differential equation involves the Laplacian transform, we hope that the second derivative of the function $u(x)$ is not a constant. To ensure the smoothness of function $u_{\theta}$, we apply the non-linear function \eqref{non linear} as the activation function, instead of ReLU (rectified linear unit) function.
+\begin{equation}\label{non linear}
+	\phi(x)=\max\{x^3,0\}. 
 \end{equation}
 
-\par The residual connection in \cite{he2016deep}   %这里引ResNet那篇
-helps to avoid the gradient vanishing problems.
-After several blocks, we use a linear transform to get the final result. The whole network can be expressed as
+\par The residual connection in \cite{he2016deep} helps to avoid gradient vanishing problems. After several blocks, we adopt a linear transform to the final result. The architecture of residual connection can be viewed in \ref{architecture}. And the whole network can be expressed as
 \begin{equation}
-u_{\theta}(x)=a\cdot f_n(x) \circ ...\circ f_1(x)+b
+	u_{\theta}(x)=a\cdot f_n(x) \circ ...\circ f_1(x)+b,
 \end{equation}
-$f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear transform. Note that the input vector $x$ is not necessarily m-dimensional. In order to handle this mismatch, we can pad $x$ by a zero vector. In our model, we always assume $d<m$.
-\par After building our trail function, we are left to minimize the $I(u)$ in (\ref{I_equ})
+where $f_i(x)$ is the $i$-th block and $a\in R^m, b\in R$. Note that the input vector $x$ is not necessarily $m$-dimensional. In order to handle this mismatch, we can pad $x$ with a vector of zeros. In our model, we always assume $d<m$.
+\par After building our trail functions, the rest of our work is to minimize the $I(u)$ in (\ref{I_equ})
 
-\subsection{Euler numerical integration method}   
-\par The first problem we need to solve is to calculate the integral in (\ref{I_equ})
- . For simplicity, define:
+\subsection{Euler Numerical Integration Method}   
+\par The first problem we need to deal with is to calculate the integral in (\ref{I_equ})
+ . For simplicity, we define:
  \begin{equation}
  g(x,\theta)=|\nabla u(x)|^2-f(x)u(x)
  \end{equation}
- then the $I(u)$ can be expressed as
+ then $I(u)$ can be expressed as
  \begin{equation}
  I(u)=\int _{\Omega}g(x,\theta)dx
  \end{equation}
- Obviously, it's impossible to calculate this integral directly. We use Euler numerical integration method to approximate the integral.
+ Obviously, it's impossible to calculate this integral directly. We use Euler integration method to approximate the integral.
  \begin{equation}
- I(u)=L(x,\theta)=\frac{1}{N}\sum\limits_{i=1}^{N}g(x_i,\theta)
+ I(u)=L(x,\theta)=\frac{1}{N}\sum\limits_{i=1}^{N}g(x_i,\theta),
  \end{equation}
- Where each $x_i$ corresponds to a data point. Each data point is taken from the grid $[-1,1]\times [-1,1]$ in steps of 0.001.
+ where $x_i$ is taken from the uniform grid on the domain with steps 0.001.
  \subsection{The stochastic gradient descent algorithm}
- In deep learning, stochastic gradient descent (SGD) is a common method to minimize the loss function. In this problem, we also choose SGD method to minimize $I(u)$, which can be expressed as:
+ During the training process of neural networks, stochastic gradient descent (SGD) is a commonly used method for optimization. In this problem, we also choose stochastic gradient descent method to minimize $I(u)$. This optimization process can be expressed as:
  \begin{equation}
- \theta^{k+1}=\theta^{k}-\eta \nabla_{\theta}\frac{1}{N}\sum\limits_{i=1}^{N}g(x_{i,k},\theta^k)
+ \theta^{k+1}=\theta^{k}-\eta \nabla_{\theta}\frac{1}{N}\sum\limits_{i=1}^{N}g(x_{i,k},\theta^k),
  \end{equation}
- where $k$ is the number of iterations.$\{x_{i,k}\}$ is the randomly selected data from the grid. In SGD, we only select a small number of data points from the grid at a time. Due to our limited computing capiticy, we should make a compromise  between computing the true gradient and the gradient at a single example. So we choose SGD to compute the gradient against more than one training example (also called a "mini-batch") at each step. In order to optimize our training process, we use the Adam \cite{kingma2014adam} version of SGD.
-
+ where $\{x_{i,k}\}$ is the randomly selected from uniform grid points. In our settings, we use mini-batch stochastic gradient descent algorithm and Adam \cite{kingma2014adam} optimizer to optimize.
 
 \section{Our improvements}
 \par Along with the footsteps of professor E, we have achieved very good results. Based on the results already available, we want to make further improvements. 
