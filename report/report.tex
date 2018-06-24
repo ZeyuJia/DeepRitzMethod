@@ -56,11 +56,11 @@
 \maketitle
 
 \begin{abstract}
-For long people meet great difficulty when solving numerical partial differential equations (PDEs), especially in high-dimensional conditions. Based on E and Yu's prior work, we explore and improve a way to solve a certain kind of PDE using variational methods and deep neural networks. With residual blocks and stochastic gradient descent, it works well in both low-dimensional and high-dimensional conditions. Besides, our improvement makes the result much better.
+\par For long people have met great difficulties when solving numerical partial differential equations (PDEs), especially in high-dimensional conditions. In order to solve partial differential equations effectively, Yu and E proposed the deep Ritz method \cite{yu2017deep}, combining the traditional Ritz method with deep learning. With residual blocks and stochastic gradient descent, it works well under both low-dimensional and high-dimensional conditions. In this report we delve deeper into their work and propose several improvements on their models, includeing the self-adaptive regularization and actor-critic self-adaptive method. Besides, we also do numerical experiments by ourselves, and our improvements make the deep Ritz method work better. 
 \end{abstract}
 
 \section{Introduction}
-\par Partial differential equation \cite{evans1998partial} is an important tool to characterize our world mathematically. From physics to chemistry, or from financial to engineering, partial differential equations always play a indispensable role. However, the partial differential equation is always very hard to solve, and most of time it is impossible. So in practice, we often find some ways to simplify the original partial differential equations, and solve it. To achieve this goal, we need to figure out some ways to solve these simplified partial differential equations, or at least, find their approximate solutions.
+\par Partial differential equation \cite{evans1998partial} is an important tool to characterize our world mathematically. From physics to chemistry, and from financial to engineering, partial differential equations always play an indispensable role. However, partial differential equation is always very hard to solve, and at most of the time it is impossible. So in practice, we often find some ways to simplify the original partial differential equations, and solve them. To achieve this goal, we also need to figure out some ways to solve these simplified partial differential equations, or at least, find their approximate solutions.
 \par The simplified partial differential equation we are going to discuss in this report is the Poisson equation 
 \eqref{poisson}
 \begin{equation}\label{poisson}
@@ -69,13 +69,13 @@ For long people meet great difficulty when solving numerical partial differentia
 		u = g, \qquad\forall x\in\partial\Omega.
 	\end{cases}
 \end{equation}
-\par The traditional partial differential solving methods include finite difference method \cite{strikwerda2004finite}, finite volume method \cite{versteeg2007introduction} and finite element method \cite{brenner2007mathematical}. These method are the most commonly used method in solving partial differential equations. And complete theories for these methods, such as consistency, stability and convergence, have been well established. However, these method will become tough, even impossible, to complex functions or high dimension situation. Even though the convergence still holds, the time complexity it guarantees will not permit such enormous calculations. Thus, we need to develop some method to tackle these difficulties.
-\par Deep learning \cite{lecun2015deep} has been well developed recently. Benefited from its well approximating ability, flexibility and fine solution to the curse of dimensionality, we have achieved state of art on so many missions, such as classification, object detection and so on. So it is natural to think about a suitable way to use deep learning to solve partial differential equations. \cite{yu2017deep} proposed a method to approximate the solution by a neural network, and use the well-know Ritz method to solve the variational problem. \cite{1707.02568}\cite{weinan2017deep}\cite{beck2017machine} first transfer partial differential equations into backward stochastic differential equations, and then use neural network or other machine learning methods to approximate their solutions.
-\par In this report, what we focus on is Deep Ritz Method \cite{yu2017deep}. We derive the theory of this algorithm, give our own interpretations. Besides, we also proposed several novel ideas to this algorithm, including the self-adaptive sampling method and actor-critic self-adaptive sampling method. We also write our own numerical experiments and make some comparison between the original methods and methods we proposed.
-\par The plan of this report is as follows: In section 2, we will give a brief introduction of Ritz method, which is the basis of deep Ritz method. The structure of deep Ritz method will be showed in section 3. In section 4, our novelty to the deep Ritz method will be exhibited and illustrated. And finally in section 5, we will show the numerical experiments we done by ourselves and their interpretation.
+\par The traditional partial differential equation solving methods include finite difference method \cite{strikwerda2004finite}, finite volume method \cite{versteeg2007introduction} and finite element method \cite{brenner2007mathematical}. These methods are the most commonly used. And complete theories for these methods, such as consistency, stability and convergence, have been well established. However, these methods will become tough, even impossible, to complicated functions or high dimension situation. Even though the convergence still holds, the time complexity it guarantees will not permit such enormous calculations. Thus, we need to develop some methods to tackle these difficulties.
+\par Deep learning \cite{lecun2015deep} has been well developed recently. Benefited from its well approximating ability, flexibility and power to tackle the curse of dimensionality, we have achieved state of arts on so many missions, such as classification, object detection and so on. So it is natural to think about a suitable way to use deep learning to solve partial differential equations. \cite{yu2017deep} proposed a method to approximate the solution by a neural network, and use the well-known Ritz method to solve the variational problem. \cite{1707.02568}\cite{weinan2017deep}\cite{beck2017machine} first transfer partial differential equations into backward stochastic differential equations, and then use neural networks or other machine learning methods to approximate their solutions.
+\par In this report, what we focus on is Deep Ritz Method \cite{yu2017deep}. We derive the theory of this algorithm, give our own interpretations and propose several novel ideas to this algorithm, including the self-adaptive sampling method and actor-critic self-adaptive sampling method. The self-adaptive sampling method, which samples points for regularization based on the approximate error, aims to improve the efficiency of the algorithm by sampling more points where functions are not fitted well and sampling less points where functions are fitted well. And the actor-critic self-adaptive sampling method is proposed to find a better function of approximation errors into sampling distribution. We also write our own numerical experiments and make some comparison between the original methods and methods we proposed.
+\par The plan of this report is as follows: In section 2, we will give a brief introduction to Ritz method, which is the basis of deep Ritz method. The structure of deep Ritz method will be shown in section 3. In section 4, our novelty to the deep Ritz method will be exhibited and illustrated. And finally in section 5, we will present the numerical experiments we have done by ourselves and their interpretation.
 
 \section{The Ritz Method}  % 这里我觉得需要一个Ritz Method的引用,Evans或者贾泽宇发的那本数值pde都可以
-\par The Ritz method is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
+\par The Ritz method \cite{evans1998partial} is a method based on the principle of least action to find the approximation to eigenvalue equations that cannot be solved easily (or at all) analytically. Mathematically, the Ritz method can be used to approximate the solution of partial differential equations over a function space. When we want to seek a function $y(x)$that extremizes an integral $I(y(x))$. Suppose that we can approximate $y(x)$ by a linear combination of some linear independent  functions:
 \begin{equation}
 y(x)=\varphi_0(x)+k_1\varphi_1(x)+...+\varphi_N(x)
 \end{equation}
@@ -146,7 +146,7 @@ where $s_{i}$ is the output of the $i$-th layer. $W_{i1},W_{i2}\in R^{m\times m}
 \phi(x)=\max\{x^3,0\} 
 \end{equation}
 
-\par The residual connection in (\ref{res_equ})   %这里引ResNet那篇
+\par The residual connection in \cite{he2016deep}   %这里引ResNet那篇
 helps to avoid the gradient vanishing problems.
 After several blocks, we use a linear transform to get the final result. The whole network can be expressed as
 \begin{equation}
@@ -175,13 +175,12 @@ $f_i(x)$ is the $i$-th block. $a\in R^m,b\in R$ is defined by the final linear t
  \begin{equation}
  \theta^{k+1}=\theta^{k}-\eta \nabla_{\theta}\frac{1}{N}\sum\limits_{i=1}^{N}g(x_{i,k},\theta^k)
  \end{equation}
- where $k$ is the number of iterations.$\{x_{i,k}\}$ is the randomly selected data from the grid. In SGD, we only select a small number of data points from the grid at a time. Due to our limited computing capiticy, we should make a compromise  between computing the true gradient and the gradient at a single example. So we choose SGD to compute the gradient against more than one training example (also called a "mini-batch") at each step. In order to optimize our training process, we use the Adam version of SGD.
+ where $k$ is the number of iterations.$\{x_{i,k}\}$ is the randomly selected data from the grid. In SGD, we only select a small number of data points from the grid at a time. Due to our limited computing capiticy, we should make a compromise  between computing the true gradient and the gradient at a single example. So we choose SGD to compute the gradient against more than one training example (also called a "mini-batch") at each step. In order to optimize our training process, we use the Adam \cite{kingma2014adam} version of SGD.
 
 
 \section{Our improvements}
 \par Along with the footsteps of professor E, we have achieved very good results. Based on the results already available, we want to make further improvements. 
 
-\subsection{L2 regularization}
 
 \subsection{Self-adaptive Sampling}
 \par In order to find out the tougher place and enhance the regularization, we use a self-adaptive sampling method here. This idea is similar to adaptive finite element method in chapter 9 of \cite{brenner2007mathematical}, which refines the grid adaptively according to the difficulty of each grid. (this difficulty is described by the value of $f$ given the PDE $\Delta u = f$.) 
@@ -241,7 +240,7 @@ u=\frac{1}{4}(x^2+y^2-1)
 \end{equation}
 
 \par As described above, we use three blocks (six fully connected layers) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
-\begin{equation}
+\begin{equation}\label{functional}
 I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
 \end{equation}
 Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and $\beta\int_{\partial \Omega}u(x)^2dx$ is the penalty item.We choose $\beta=500$ and $\gamma=500$.
@@ -263,13 +262,15 @@ As is shown from the figure, the dark color indicates that the absolute error be
 \label{different layers of poisson equation}
 \begin{tabular}{ccc} 
 	\toprule  %添加表格头部粗线
-	Blocks Num&Parameters& Relative Loss\\
-	\midrule  %添加表格中横线
-	\\3 & 671&1.3\%
-	\\
-	\\
-	\\
-	\\
+	Blocks Num & Parameters & Relative Loss\\
+	\hline
+	1 & 231 & \\
+	\hline
+	2 & 451 & 2.0\\
+	\hline
+	3 & 671 & 1.3\\
+	\hline
+	4 & 891 & \\
 	\bottomrule %添加表格底部粗线
 \end{tabular}
 \end{table}
@@ -359,9 +360,7 @@ Our method is not robust enough for general application. Sometimes much tuning w
 
 \bibliography{reference}
 \bibliographystyle{plain}
-\cite{Evans2010Partial}
-\cite{Weinan2018The}
-\cite{He2016Deep}
+
 
 \medskip
 
