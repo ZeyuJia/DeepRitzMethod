@@ -171,18 +171,18 @@ where $f_i(x)$ is the $i$-th block and $a\in R^m, b\in R$. Note that the input v
  I(u)=L(x,\theta)=\frac{1}{N}\sum\limits_{i=1}^{N}g(x_i,\theta),
  \end{equation}
  where $x_i$ is taken from the uniform grid on the domain with steps 0.001.
- \subsection{The stochastic gradient descent algorithm}
+ \subsection{The Stochastic Gradient Descent Algorithm}
  During the training process of neural networks, stochastic gradient descent (SGD) is a commonly used method for optimization. In this problem, we also choose stochastic gradient descent method to minimize $I(u)$. This optimization process can be expressed as:
  \begin{equation}
  \theta^{k+1}=\theta^{k}-\eta \nabla_{\theta}\frac{1}{N}\sum\limits_{i=1}^{N}g(x_{i,k},\theta^k),
  \end{equation}
  where $\{x_{i,k}\}$ is the randomly selected from uniform grid points. In our settings, we use mini-batch stochastic gradient descent algorithm and Adam \cite{kingma2014adam} optimizer to optimize.
 
-\section{Our improvements}
+\section{Our Improvements}
 \par Along with the footsteps of professor E, we have achieved very good results. Based on the results already available, we want to make further improvements. 
 
 
-\subsection{Self-adaptive Sampling}
+\subsection{Self-Adaptive Sampling}
 \par In order to find out the tougher place and enhance the regularization, we use a self-adaptive sampling method here. This idea is similar to adaptive finite element method in chapter 9 of \cite{brenner2007mathematical}, which refines the grid adaptively according to the difficulty of each grid. (this difficulty is described by the value of $f$ given the PDE $\Delta u = f$.) 
 \par Here we adopt the self adaptive method on the regularization terms, which are the boundary constraints or interior constraints. Suppose the neural network function is $f(x) = \mathrm{NN}(x, \theta_k)$, then we will use the following adaptive method to sample:
 \begin{itemize}
@@ -191,7 +191,7 @@ where $f_i(x)$ is the $i$-th block and $a\in R^m, b\in R$. Note that the input v
 \end{itemize}
 \par  According to this method, more points will be sampled at places where the neural network does not fit well, and less points will be sampled at places where the neural network fits well. 
 
-\subsection{Actor-critic Self-adaptive Sampling}
+\subsection{Actor-Critic Self-Adaptive Sampling}
 \par From the numerical experiments of self-adaptive sampling method, we find out that the self-adaptive method works better. However, there is one problem still involved in. That is, we actually do not know which distribution of sampling is the most suitable way, and can achieve the best regularization effect. In the discussion of the last subsection, we choose the distribution to be proportional to the error between $\Delta(x)$ and $f(x)$. This choice seems plausible, but we cannot make sure that the error we choose in this way is perfect. Hence we introduce the following actor-critic way to sampling. And for simplicity, we only discussed about the self-adaptive sampling method on the boundary (the situation in the interior is similar to this).
 \par Actor-critic \cite{konda2000actor} is a famous method in reinforcement learning. The core idea is similar to generative adversarial networks (GAN) \cite{goodfellow2014generative}, both of which design two networks, an actor (generative) network and a critic (discriminator) network. The task of the actor is to generate a distribution or a policy, and the task of the critic is to analyze the difference between the generated distribution and the real distribution.
 \par In our settings, we use the actor to generate a distribution which can be used for sampling points for regularization, as we discussed above. Some assumptions need to be clarified first. That is, we assume the density function of the distribution is a function of the error \eqref{error} (In the last subsection, the density function is identity to the the error). 
@@ -254,7 +254,7 @@ Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and $\beta\
 \end{figure}
 As is shown from the figure, the dark color indicates that the absolute error between the numerical solution and the real solution is small, while the light color indicates that the absolute error between the numerical solution and the real solution is relatively large.Deep Ritz method performs well with this problem after 400 iterations.
 
-\par After testing models of different layers, we find that the 3-layers model with 671 parameters performed best on this problem. Our numerical results is shown in Table \ref{different layers of poisson equation}. Too many parameters may lead overfitting, limiting the performance of the networks.
+\par After testing models of different layers, we find that the 3-layers model with 671 parameters performed best on this problem. Our numerical results of relative error computed by $l_2$-norm is shown in Table \ref{different layers of poisson equation}. Too many parameters may lead overfitting, limiting the performance of the networks.
 
 \begin{table}[htbp]
 \centering  
@@ -262,7 +262,7 @@ As is shown from the figure, the dark color indicates that the absolute error be
 \label{different layers of poisson equation}
 \begin{tabular}{ccc} 
 	\toprule  %添加表格头部粗线
-	Blocks Num & Parameters & Relative Loss\\
+	Blocks Num & Parameters & Relative Loss (\%) \\
 	\hline
 	1 & 231 & 3.2\\
 	\hline
@@ -275,20 +275,21 @@ As is shown from the figure, the dark color indicates that the absolute error be
 \end{tabular}
 \end{table}
 
-
-\subsection{The poisson equation in high dimension}
+\subsection{The Poisson Equation in High Dimension}
 As for high dimension equation, our model can also do well. Considering Poisson Equation in higher dimension:
+
 \begin{equation}
 \left \{
 \begin{aligned}
 &-\Delta u =0, &x\in (0,1)^{10} \\
-&u(x)=\sum\limits_{k=1}^5x_{2k-1}x_{2k}, &x\in \partial (0,1)^{10}
+&u(x)=\sum_{k=1}^5x_{2k-1}x_{2k}, &x\in \partial (0,1)^{10}
 \end{aligned}
 \right.
 \end{equation}
+
 The exact solution for this equation is 
 \begin{equation}
-u(x)=\sum\limits_{k=1}^5x_{2k-1}x_{2k}
+u(x)=\sum\limits_{k=1}^5x_{2k-1}x_{2k}.
 \end{equation}
 The network we used this time has the same structure as \ref{poisson_in_2d}. We still use three blocks (six fully connected layers) and a final linear transform with m = 10 to build our networks. But there are some differences in the penalty items. This time we let the learning rate increase with the number of iterations, which can lead to a better training results. The learning rate can be expressed as:
 \begin{equation}
@@ -325,9 +326,6 @@ Where $N$ is the number of iteration.After a few attempts, we choose $\beta_0=1.
 \end{figure}
 
 Same as before, the color depth in the graph reflects the absolute error from the exact value.
-
-
-\section{Further discussion}
 
 \section{Conclusion and Discussions}
 
