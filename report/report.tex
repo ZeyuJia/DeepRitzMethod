@@ -124,7 +124,7 @@ Substituting \eqref{int_by_parts} into \eqref{d_I} we can obtain the following e
 \begin{equation}
 \Delta u(x)+f(x)=0,\qquad x\in \Omega.
 \end {equation}
-\par According to Ritz Method, what we need to do is
+\par According to Ritz Method, what we need to do is to find the minimum of $I$, which is
 \begin{equation}\label{optimization problem}
 \min\limits_{u\in H}{I(u)},
 \end{equation}
@@ -132,7 +132,7 @@ where
 \begin{equation}\label{I_equ}
 I(u)=\int_\Omega\left(\frac{1}{2}|\nabla u(x)|^2-f(x)u(x)\right)dx,
 \end{equation}
-and $H$ is the set of admissible function. Our main idea is to facilitate the multi-layer neural network approximation function $u(x)$ and use the stochastic gradient descent algorithm to solve the optimization problem \eqref{optimization problem}.
+and $H$ is the set of admissible function. Our main idea is to find a solution approximate to the real solution in favor of multi-layer neural networks' approximation property. And we will use the stochastic gradient descent algorithm to solve the optimization problem \eqref{optimization problem}.
 
 \subsection{Building Trail Function}
 \par We use a nonlinear transformation $x \to u_{\theta}(x)$ defined by deep neural networks to approximate function $u(x)$. Here $\theta$ denotes network parameters in our model. Similar to ResNet structure, we use several blocks to construct our networks, where each block consists of two linear transformations, two activation functions and one residual connection. The $i$-th block can be expressed as 
@@ -179,28 +179,27 @@ where $f_i(x)$ is the $i$-th block and $a\in R^m, b\in R$. Note that the input v
  where $\{x_{i,k}\}$ is the randomly selected from uniform grid points. In our settings, we use mini-batch stochastic gradient descent algorithm and Adam \cite{kingma2014adam} optimizer to optimize.
 
 \section{Our Improvements}
-\par Along with the footsteps of professor E, we have achieved very good results. Based on the results already available, we want to make further improvements. 
+\par Along with the footsteps of professor E, we have achieved very good results. Besides, to make the deep Ritz method more powerful and more efficient, we have made several improvements. Some of them has already proved to be better in our numerical experiments. And as for others, we have not fully implemented, due to the limit of our computing capability.
 
-
-\subsection{Self-Adaptive Sampling}
+\subsection{Self-Adaptive Sampling}\label{self-adaptive}
+\par From our numerical experiments of the original deep Ritz method, we have observed one severe problem. That is, on the boundary, their are always some places where boundary conditions are fitted well and some places not well. If we choose the optimization step to be small, then no matter what the coefficient of regularization term is, places where boundary conditions are not fitted well cannot get better. And if we choose the step to be large, then the objective function will blow up. Hence it is necessary to use a technique which can find places where boundary conditions are not fitted well and take more care of such places. And this gives rise to this method.
 \par In order to find out the tougher place and enhance the regularization, we use a self-adaptive sampling method here. This idea is similar to adaptive finite element method in chapter 9 of \cite{brenner2007mathematical}, which refines the grid adaptively according to the difficulty of each grid. (this difficulty is described by the value of $f$ given the PDE $\Delta u = f$.) 
-\par Here we adopt the self adaptive method on the regularization terms, which are the boundary constraints or interior constraints. Suppose the neural network function is $f(x) = \mathrm{NN}(x, \theta_k)$, then we will use the following adaptive method to sample:
+\par Here we adopt the self adaptive method on the regularization terms, which are the boundary constraints. Suppose the neural network function is $f(x) = \mathrm{NN}(x, \theta_k)$, then we will use the following adaptive method to sample:
 \begin{itemize}
-	\item For the boundary restrictions, we sample points according to density function $|f(x)|$ where $x$ is on the boundary of $\partial\Omega$.
-	\item For interior, we sample uniformly for the variation, and sample according to density function $|\Delta(x) - f(x)|$.
+	\item Take the Poisson equation \eqref{poisson} as an example, for any $x\in\partial\Omega$, we sample points according to density function $|f(x)|$ (we may need to normalize this density function).
 \end{itemize}
-\par  According to this method, more points will be sampled at places where the neural network does not fit well, and less points will be sampled at places where the neural network fits well. 
+\par  According to this, more points will be sampled at places where the neural network does not fit well, and less points will be sampled at places where the neural network fits well. 
 
 \subsection{Actor-Critic Self-Adaptive Sampling}
-\par From the numerical experiments of self-adaptive sampling method, we find out that the self-adaptive method works better. However, there is one problem still involved in. That is, we actually do not know which distribution of sampling is the most suitable way, and can achieve the best regularization effect. In the discussion of the last subsection, we choose the distribution to be proportional to the error between $\Delta(x)$ and $f(x)$. This choice seems plausible, but we cannot make sure that the error we choose in this way is perfect. Hence we introduce the following actor-critic way to sampling. And for simplicity, we only discussed about the self-adaptive sampling method on the boundary (the situation in the interior is similar to this).
+\par From the numerical experiments, we find out that the deep Ritz method with self-adaptive sampling method works better than the original method. However, there is still one problem involved in. That is, we actually do not know which distribution of sampling is the most suitable, and which one can achieve the best regularization effect. In the discussion of the last subsection, we choose the distribution to be proportional to the error between $0$ and $f(x)$ on the boundary. This choice seems plausible, but we cannot make sure that this choice is perfect. Hence we introduce the following actor-critic way to sampling.
 \par Actor-critic \cite{konda2000actor} is a famous method in reinforcement learning. The core idea is similar to generative adversarial networks (GAN) \cite{goodfellow2014generative}, both of which design two networks, an actor (generative) network and a critic (discriminator) network. The task of the actor is to generate a distribution or a policy, and the task of the critic is to analyze the difference between the generated distribution and the real distribution.
-\par In our settings, we use the actor to generate a distribution which can be used for sampling points for regularization, as we discussed above. Some assumptions need to be clarified first. That is, we assume the density function of the distribution is a function of the error \eqref{error} (In the last subsection, the density function is identity to the the error). 
+\par In our settings, we use the actor to generate a distribution which can be used for sampling points on boundary, as we discussed above. Some assumptions need to be clarified first. We assume the density function of the distribution is a function of the error \eqref{error} (In the last subsection, the density function is proportional to the error). 
 \begin{equation}\label{error}
-	\pi(x) = \phi(err(x), \theta_{a}),
+	\pi(x) = \phi(err(x), \theta_{a}),\qquad\forall x\in\partial\Omega
 \end{equation}
-where $err(x)$ is the error function at $x$, $\theta_{a}$ is the parameter of network, and $\pi(x)$ is the desirable sampling distribution. Besides, we also assume that the function $\phi$ only depends on the domain $\Omega$ and has nothing to do with the partial differential equation. Hence the actor is a network which takes the approximate error as input and output the sampling distribution. And in \eqref{error} it is the function $\phi$ with network parameters $\theta_{a}$. 
+where $err(x)$ is the error function at $x$, $\theta_{a}$ are parameters of the network, and $\pi(x)$ is the desirable sampling distribution. Besides, we also assume that the function $\phi$ only depends on the domain $\Omega$ and has nothing to do with the partial differential equation. Hence the actor is a network which takes the approximate error as input and output the sampling distribution. And in \eqref{error} it is the function $\phi$ with network parameters $\theta_{a}$. 
 \par As for critic network in our settings, distinguished from \cite{goodfellow2014generative} \cite{konda2000actor}, we use the critic network to test the effectiveness of the sampling distribution generated by the actor. This network $\psi(u_{approx}, u_{real}, \theta_{c})$ will give and effective measure of error between the approximate solution and the real solution. We assume that the network parameters only depend on $\Omega$ as well, like the actor network.
-\par As for the training for both neural network, based on the assumption that only the shape of domain could influence $\theta_{a}, \theta_{c}$. Given the domain $\Omega$, we first choose some rather simple functions. Then we initialize solutions for their corresponding Poisson equations (do not need to be accurate) and apply deep Ritz method to solve for a few iterations. Besides, we also adopt some numerical methods, such as finite difference method or finite element method. And compare the solutions of these numerical methods and deep Ritz method by our critic network to give the loss. Then we can train the actor network to minimize the losses and train the critic network to maximize the losses. The whole process can be viewed in algorithm 
+\par As for the training process, based on the assumption we made before, given the domain $\Omega$, we will first choose some rather simple functions. Then we initialize solutions for their corresponding Poisson equations (do not need to be accurate) and apply deep Ritz method to solve for a few iterations. Besides, we also adopt some numerical methods, such as finite difference method or finite element method. And compare the solutions of these numerical methods and deep Ritz method by our critic network to give the loss. Then we can train the actor network to minimize the losses and train the critic network to maximize the losses. The whole process can be viewed in algorithm 
 \ref{ac-algorithm} and figure \ref{ac-figure}
 \begin{algorithm}
 	\caption{Actor-critic Self-adaptive Training}
@@ -215,6 +214,7 @@ where $err(x)$ is the error function at $x$, $\theta_{a}$ is the parameter of ne
 		\State Put $u_{i}'^{j}$ and $v_{i}^{j}$ into the critic network with parameter $\theta_{c}$, and obtain the loss $\mathcal{L}_{i}^{j}$.
 		\State Train $\theta_{a}$ to minimize the sum of loss $\mathcal{L}_{i}^{j}$.
 		\State Train $\theta_{c}$ to maximize the sum of loss $\mathcal{L}_{i}^{j}$.
+		\State\textbf{Output:} Network parameters $\theta_{a}, \theta_{c}$.
  	\end{algorithmic}
 \end{algorithm}
 
@@ -239,7 +239,7 @@ Here $\Omega =\{(x,y)| x^2+y^2<1\}$.
 u=\frac{1}{4}(x^2+y^2-1)
 \end{equation}
 
-\par As described above, we use three blocks (six fully connected layers) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
+\par As we described above, we use three blocks (six fully connected layers) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
 \begin{equation}\label{functional}
 I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
 \end{equation}
@@ -256,7 +256,7 @@ As is shown from the figure, the dark color indicates that the absolute error be
 
 \par After testing models of different layers, we find that the 3-layers model with 671 parameters performed best on this problem. Our numerical results of relative error computed by $l_2$-norm is shown in Table \ref{different layers of poisson equation}. Too many parameters may lead overfitting, limiting the performance of the networks.
 
-\begin{table}[htbp]
+\begin{table}
 \centering  
 \caption{Relative loss of different layers with Poisson Eqaution}
 \label{different layers of poisson equation}
@@ -274,6 +274,24 @@ As is shown from the figure, the dark color indicates that the absolute error be
 	\bottomrule %添加表格底部粗线
 \end{tabular}
 \end{table}
+
+\subsection{Numerical Experiments for Self-adaptive Sampling Method}
+\par We have implemented self-adaptive sampling method, which is described in Section \ref{self-adaptive}. The results are listed in Table \ref{adaptive experiments}
+\begin{table}
+	\centering
+	\caption{Comparison of Self-adaptive Sampling Method and Original Method}
+	\label{adaptive experiments}
+	\begin{tabular}{ccc}
+		\toprule
+		& Accuracy & CPU Time\\
+		\hline
+		Deep Ritz Method & & 8.41s\\
+		\hline
+		Self-adaptive Sampling Method & & 18.63\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+\par The previous numerical experiments are carried on a computer with Intel Core i7 (3.1 GHZ). The CPU time is for experiments whose iteration number is 10. From this results we obtain that though self-adaptive sampling method takes more time than the original method (most of the CPU time is used on calculating in the sampling process), this method provided a more accurate result. 
 
 \subsection{The Poisson Equation in High Dimension}
 As for high dimension equation, our model can also do well. Considering Poisson Equation in higher dimension:
