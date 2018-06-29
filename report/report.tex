@@ -160,11 +160,11 @@ where $f_i(x)$ is the $i$-th block and $a\in R^m, b\in R$. Note that the input v
 \par The first problem we need to deal with is to calculate the integral in (\ref{I_equ})
  . For simplicity, we define:
  \begin{equation}
- g(x,\theta)=|\nabla u(x)|^2-f(x)u(x)
+ g(x,\theta)=|\nabla u(x)|^2-f(x)u(x),
  \end{equation}
  then $I(u)$ can be expressed as
  \begin{equation}
- I(u)=\int _{\Omega}g(x,\theta)dx
+ I(u)=\int _{\Omega}g(x,\theta)dx.
  \end{equation}
  Obviously, it's impossible to calculate this integral directly. We use Euler integration method to approximate the integral.
  \begin{equation}
@@ -176,10 +176,10 @@ where $f_i(x)$ is the $i$-th block and $a\in R^m, b\in R$. Note that the input v
  \begin{equation}
  \theta^{k+1}=\theta^{k}-\eta \nabla_{\theta}\frac{1}{N}\sum\limits_{i=1}^{N}g(x_{i,k},\theta^k),
  \end{equation}
- where $\{x_{i,k}\}$ is the randomly selected from uniform grid points. In our settings, we use mini-batch stochastic gradient descent algorithm and Adam \cite{kingma2014adam} optimizer to optimize.
+ where $\{x_{i,k}\}$ is the randomly selected from uniform grid points. In our settings, we use stochastic gradient descent algorithm with mini-batch and Adam \cite{kingma2014adam} optimizer to optimize.
 
 \section{Our Improvements}
-\par Along with the footsteps of professor E, we have achieved very good results. Besides, to make the deep Ritz method more powerful and more efficient, we have made several improvements. Some of them has already proved to be better in our numerical experiments. And as for others, we have not fully implemented, due to the limit of our computing capability.
+\par Along with the footsteps of professor E, we have achieved very good results. Besides, to make the deep Ritz method more powerful and more efficient, we have made several improvements, including the self-adaptive sampling method and actor-critic self-adaptive sampling method. The former method has already been proved to be better in our numerical experiments. And as for the other method, we have not fully implemented, due to the limit of our computing capability.
 
 \subsection{Self-Adaptive Sampling}\label{self-adaptive}
 \par From our numerical experiments of the original deep Ritz method, we have observed one severe problem. That is, on the boundary, their are always some places where boundary conditions are fitted well and some places not well. If we choose the optimization step to be small, then no matter what the coefficient of regularization term is, places where boundary conditions are not fitted well cannot get better. And if we choose the step to be large, then the objective function will blow up. Hence it is necessary to use a technique which can find places where boundary conditions are not fitted well and take more care of such places. And this gives rise to this method.
@@ -291,7 +291,7 @@ As is shown from the figure, the dark color indicates that the absolute error be
 		\bottomrule
 	\end{tabular}
 \end{table}
-\par The previous numerical experiments are carried on a computer with Intel Core i7 (3.1 GHZ). The CPU time is for experiments whose iteration number is 10. From this results we obtain that though self-adaptive sampling method takes more time than the original method (most of the CPU time is used on calculating in the sampling process), this method provided a more accurate result. 
+\par The previous numerical experiments are carried on a computer with two Intel Core i7 CPUs (3.1 GHZ). The CPU time is for experiments whose iteration number is 10. From this results we obtain that though self-adaptive sampling method takes more time than the original method (most of the CPU time is used on calculating in the sampling process), this method provided a more accurate result. 
 
 \subsection{The Poisson Equation in High Dimension}
 As for high dimension equation, our model can also do well. Considering Poisson Equation in higher dimension:
