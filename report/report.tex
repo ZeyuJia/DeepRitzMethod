@@ -182,32 +182,32 @@ where $f_i(x)$ is the $i$-th block and $a\in R^m, b\in R$. Note that the input v
 \par Along with the footsteps of professor E, we have achieved very good results. Besides, to make the deep Ritz method more powerful and more efficient, we have made several improvements, including the self-adaptive sampling method and actor-critic self-adaptive sampling method. The former method has already been proved to be better in our numerical experiments. And as for the other method, we have not fully implemented, due to the limit of our computing capability.
 
 \subsection{Self-Adaptive Sampling}\label{self-adaptive}
-\par From our numerical experiments of the original deep Ritz method, we have observed one severe problem. That is, on the boundary, their are always some places where boundary conditions are fitted well and some places not well. If we choose the optimization step to be small, then no matter what the coefficient of regularization term is, places where boundary conditions are not fitted well cannot get better. And if we choose the step to be large, then the objective function will blow up. Hence it is necessary to use a technique which can find places where boundary conditions are not fitted well and take more care of such places. And this gives rise to this method.
-\par In order to find out the tougher place and enhance the regularization, we use a self-adaptive sampling method here. This idea is similar to adaptive finite element method in chapter 9 of \cite{brenner2007mathematical}, which refines the grid adaptively according to the difficulty of each grid. (this difficulty is described by the value of $f$ given the PDE $\Delta u = f$.) 
-\par Here we adopt the self adaptive method on the regularization terms, which are the boundary constraints. Suppose the neural network function is $f(x) = \mathrm{NN}(x, \theta_k)$, then we will use the following adaptive method to sample:
+\par From our numerical experiments of the original deep Ritz method, we have observed one severe problem, that is, on the boundary, there are always some places where boundary conditions are fitted well and some places are not. If we choose a small optimization step, then no matter what the coefficient of regularization term is, places where boundary conditions are not fitted well cannot get better. And if we choose a large step, then the objective function will blow up. Hence it is necessary to use a technique which can find places where boundary conditions are not fitted well and takes more care of such places. And this gives rise to this method.
+\par In order to find out the tougher place and enhance the regularization, we use a self-adaptive sampling method here. This idea is similar to adaptive finite element method in chapter 9 of \cite{brenner2007mathematical}, which refines the grid adaptively according to the difficulty on each grid. (this difficulty is described by the value of $f$ given the PDE $\Delta u = f$.) 
+\par Here we adopt the self adaptive method on the regularization terms, which are the boundary constraints. Suppose the neural network function is $f(x) = \mathrm{NN}(x, \theta_k)$, then the following adaptive method will be used to sample:
 \begin{itemize}
-	\item Take the Poisson equation \eqref{poisson} as an example, for any $x\in\partial\Omega$, we sample points according to density function $|f(x)|$ (we may need to normalize this density function).
+	\item Take the Poisson equation \eqref{poisson} as an example. For any $x\in\partial\Omega$, we sample points according to density function $|f(x)|$ (we need to normalize this density function).
 \end{itemize}
 \par  According to this, more points will be sampled at places where the neural network does not fit well, and less points will be sampled at places where the neural network fits well. 
 
 \subsection{Actor-Critic Self-Adaptive Sampling}
-\par From the numerical experiments, we find out that the deep Ritz method with self-adaptive sampling method works better than the original method. However, there is still one problem involved in. That is, we actually do not know which distribution of sampling is the most suitable, and which one can achieve the best regularization effect. In the discussion of the last subsection, we choose the distribution to be proportional to the error between $0$ and $f(x)$ on the boundary. This choice seems plausible, but we cannot make sure that this choice is perfect. Hence we introduce the following actor-critic way to sampling.
+\par From the numerical experiments, we find out that the deep Ritz method with self-adaptive sampling method works better than the original method. However, there is still one problem involved in. That is, we actually do not know which distribution of sampling is the most suitable, and which one can achieve the best regularization effect. In the discussion of the last subsection, we choose the distribution to be proportional to the error between $0$ and $f(x)$ on the boundary. This choice seems plausible, but we cannot make sure that this choice is perfect. Hence we introduce the following actor-critic way to sample.
 \par Actor-critic \cite{konda2000actor} is a famous method in reinforcement learning. The core idea is similar to generative adversarial networks (GAN) \cite{goodfellow2014generative}, both of which design two networks, an actor (generative) network and a critic (discriminator) network. The task of the actor is to generate a distribution or a policy, and the task of the critic is to analyze the difference between the generated distribution and the real distribution.
 \par In our settings, we use the actor to generate a distribution which can be used for sampling points on boundary, as we discussed above. Some assumptions need to be clarified first. We assume the density function of the distribution is a function of the error \eqref{error} (In the last subsection, the density function is proportional to the error). 
 \begin{equation}\label{error}
 	\pi(x) = \phi(err(x), \theta_{a}),\qquad\forall x\in\partial\Omega
 \end{equation}
 where $err(x)$ is the error function at $x$, $\theta_{a}$ are parameters of the network, and $\pi(x)$ is the desirable sampling distribution. Besides, we also assume that the function $\phi$ only depends on the domain $\Omega$ and has nothing to do with the partial differential equation. Hence the actor is a network which takes the approximate error as input and output the sampling distribution. And in \eqref{error} it is the function $\phi$ with network parameters $\theta_{a}$. 
-\par As for critic network in our settings, distinguished from \cite{goodfellow2014generative} \cite{konda2000actor}, we use the critic network to test the effectiveness of the sampling distribution generated by the actor. This network $\psi(u_{approx}, u_{real}, \theta_{c})$ will give and effective measure of error between the approximate solution and the real solution. We assume that the network parameters only depend on $\Omega$ as well, like the actor network.
-\par As for the training process, based on the assumption we made before, given the domain $\Omega$, we will first choose some rather simple functions. Then we initialize solutions for their corresponding Poisson equations (do not need to be accurate) and apply deep Ritz method to solve for a few iterations. Besides, we also adopt some numerical methods, such as finite difference method or finite element method. And compare the solutions of these numerical methods and deep Ritz method by our critic network to give the loss. Then we can train the actor network to minimize the losses and train the critic network to maximize the losses. The whole process can be viewed in algorithm 
+\par As for critic network in our settings, distinguished from \cite{goodfellow2014generative} \cite{konda2000actor}, we use the critic network to test the effectiveness of the sampling distribution generated by the actor. This network $\psi(u_{approx}, u_{real}, \theta_{c})$ will give an effective measure of error between the approximate solution and the real solution. We assume that the network parameters only depend on $\Omega$ as well, like the actor network.
+\par As for the training process, based on the assumption we made before, given the domain $\Omega$, we will first choose some rather simple functions. Then we initialize solutions for their corresponding Poisson equations (do not need to be accurate) and apply deep Ritz method to solve through a few iterations. Besides, we also adopt some numerical methods, such as finite difference method, finite volume method and finite element method. And compare the solutions of these numerical methods and deep Ritz method by our critic network to obtain the loss. Then we can train the actor network to minimize the loss and train the critic network to maximize the loss. The whole process can be viewed in algorithm 
 \ref{ac-algorithm} and figure \ref{ac-figure}
 \begin{algorithm}
 	\caption{Actor-critic Self-adaptive Training}
 	\label{ac-algorithm}
 	\begin{algorithmic}[1]
-		\State\textbf{Input} Domain $\Omega$, $m, t$.
+		\State\textbf{Input} Domain $\Omega$, $m, t, \theta_{c}, \theta_{a}$.
 		\State Generate some rather simple functions $f_1, f_{2}, \cdots, f_{m}$ defined on $\Omega$.
-		\State Solve these partial differential equations finite difference method or finite element method with different grid sizes. And obtain approximate solutions $v_{1}^{j}, \cdots, v_{m}^{j}, 1\le j\le t$
+		\State Solve these partial differential equations with finite difference method or finite volume method or finite element method with different grid sizes. And obtain approximate solutions $v_{1}^{j}, \cdots, v_{m}^{j}, 1\le j\le t$.
 		\State For each $1\le i\le m$, find $t$ initial solutions $u_{i}^{1}, \cdots, u_{i}^{t}$ randomly.
 		\State Use the current actor network parameter $\theta_{a}$ to generate sampling distributions for $u_{i}^{1}, \cdots, u_{i}^{t}$.
 		\State Train the original network with these distribution to obtain $u_{i}'^{1}, \cdots, u_{i}'^{t}$.
@@ -225,25 +225,22 @@ where $err(x)$ is the error function at $x$, $\theta_{a}$ are parameters of the 
 \subsection{The Poisson Equation}
 \par Considering the Poisson equation:
 \begin{equation}
-\left\{
-\begin{aligned}
- \Delta u=1,& x\in \Omega \\
- u=0, &x\in \partial \Omega \\
- \end{aligned}
-\right.
+	\begin{cases}
+ 		\Delta u=1, & x\in \Omega, \\
+ 		u=0, & x\in \partial \Omega, \\
+ 	\end{cases}
 \end{equation}
-
-Here $\Omega =\{(x,y)| x^2+y^2<1\}$.
+where $\Omega =\{(x,y)| x^2+y^2<1\}$.
 \par The exact solution to this problem is 
 \begin{equation}
-u=\frac{1}{4}(x^2+y^2-1)
+u=\frac{1}{4}(x^2+y^2-1).
 \end{equation}
 
-\par As we described above, we use three blocks (six fully connected layers) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
+\par As described above, we use three blocks (six fully connected layers) and a final linear transform with $m=10$ to build our networks. There is a total of 671 parameters in our model. Considering the boundary condition, we need to make some modifications to our model. We have decided to use a penalty method and the modified function is:
 \begin{equation}\label{functional}
-I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx+\beta\int_{\partial \Omega}u(x)^2dx
+I(u)=\int_{\Omega}\left(\frac{1}{2}|\nabla u(x)|^2-u(x)\right)dx+\beta\int_{\partial \Omega}u(x)^2dx,
 \end{equation}
-Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and $\beta\int_{\partial \Omega}u(x)^2dx$ is the penalty item.We choose $\beta=500$ and $\gamma=500$.
+where $\beta\int_{\partial \Omega}u(x)^2dx$ is the penalty item. We choose $\beta=500$.
 \par After 400 iterations, the relative loss of our model is reduced to $1.3\%$. Our training results of Deep Ritz Method is shown in Figure \ref{3.1a}
 
 \begin{figure}[ht]
@@ -252,13 +249,13 @@ Where $\gamma\int_{\Omega}|\Delta u(x) - 1|^2dx$ is the regular term and $\beta\
 	 \caption {The results of Poisson Equation}
 	 \label{3.1a}
 \end{figure}
-As is shown from the figure, the dark color indicates that the absolute error between the numerical solution and the real solution is small, while the light color indicates that the absolute error between the numerical solution and the real solution is relatively large.Deep Ritz method performs well with this problem after 400 iterations.
+As is shown from the figure, the dark color indicates that the absolute error between the numerical solution and the real solution is small, while the light color indicates that the absolute error between the numerical solution and the real solution is relatively large. Deep Ritz method performs well with this problem after 400 iterations.
 
-\par After testing models of different layers, we find that the 3-layers model with 671 parameters performed best on this problem. Our numerical results of relative error computed by $l_2$-norm is shown in Table \ref{different layers of poisson equation}. Too many parameters may lead overfitting, limiting the performance of the networks.
+\par After testing models of different layers, we find that the 3-layers model with 671 parameters performed best on this problem. Our numerical results of relative error computed by $l_2$-norm is shown in Table \ref{different layers of poisson equation}. Too many parameters may lead to difficulties of training, limiting the performance of the networks.
 
 \begin{table}
 \centering  
-\caption{Relative loss of different layers with Poisson Eqaution}
+\caption{Relative Loss of Different Layers with Poisson Equation}
 \label{different layers of poisson equation}
 \begin{tabular}{ccc} 
 	\toprule  %添加表格头部粗线
@@ -291,85 +288,39 @@ As is shown from the figure, the dark color indicates that the absolute error be
 		\bottomrule
 	\end{tabular}
 \end{table}
-\par The previous numerical experiments are carried on a computer with two Intel Core i7 CPUs (3.1 GHZ). The CPU time is for experiments whose iteration number is 10. From this results we obtain that though self-adaptive sampling method takes more time than the original method (most of the CPU time is used on calculating in the sampling process), this method provided a more accurate result. 
-
-\subsection{The Poisson Equation in High Dimension}
-As for high dimension equation, our model can also do well. Considering Poisson Equation in higher dimension:
-
-\begin{equation}
-\left \{
-\begin{aligned}
-&-\Delta u =0, &x\in (0,1)^{10} \\
-&u(x)=\sum_{k=1}^5x_{2k-1}x_{2k}, &x\in \partial (0,1)^{10}
-\end{aligned}
-\right.
-\end{equation}
-
-The exact solution for this equation is 
-\begin{equation}
-u(x)=\sum\limits_{k=1}^5x_{2k-1}x_{2k}.
-\end{equation}
-The network we used this time has the same structure as \ref{poisson_in_2d}. We still use three blocks (six fully connected layers) and a final linear transform with m = 10 to build our networks. But there are some differences in the penalty items. This time we let the learning rate increase with the number of iterations, which can lead to a better training results. The learning rate can be expressed as:
-\begin{equation}
-\beta=\beta_{0}^N
-\end{equation}
-Where $N$ is the number of iteration. We choose $\beta_0=1.01$.
+\par The previous numerical experiments are carried on a computer with two Intel Core i7 CPUs (3.1 GHz). The CPU time is for experiments whose number of iterations is 10. From this results we obtain that though self-adaptive sampling method takes more time than the original method (most of the CPU time is used on calculating in the sampling process), this method provides a more accurate result. 
 
 \subsection{Other Poisson Equation}
-\par Considering the following Poisson Equation:
+\par Considering the following Poisson equation:
 \begin{equation}
-\left\{
-\begin{aligned}
-& \Delta u=0, & x\in \Omega \\
- &u=xy,   &x\in \partial \Omega \\
- \end{aligned}
-\right.
+	\begin{cases}
+		\Delta u=0, & x\in \Omega, \\
+ 		u=xy, & x\in \partial \Omega. \\
+ 	\end{cases}
 \end{equation}
 
 Here $\Omega =\{(x,y)| 0<x,y<1\}$.
 \par The exact solution to this problem is 
 \begin{equation}
-u=xy
+u=xy.
 \end{equation}
-Compared with the equation in \ref{functional}, there are some differences in the penalty items. This time we let the learning rate increase with the number of iterations, which can lead to a better training results. The learning rate can be expressed as:
+Compared with the equation in \ref{functional}, there are some differences in the penalty items. This time we let the regularization coefficient increase with the number of iterations, which can lead to a better training results. The changing process of regularization coefficient can be expressed as:
 \begin{equation}
-\beta=\beta_{0}^N
+\beta_{N} = c^{N}\beta_{0},
 \end{equation}
-Where $N$ is the number of iteration.After a few attempts, we choose $\beta_0=1.01$. After 5000 iterations, the relative loss of our model is reduced to 1.4\%. Our training result is shown in Figure \ref{3.2a}
+where $N$ is the number of iteration and $c = 1.01$, $\beta_0=1$. After 5000 iterations, the relative loss of our model gets to 1.4\%. Our training result is shown in Figure \ref{3.2a}.
 \begin{figure}[ht]
  	 \centering
  	 \includegraphics[width=0.6\textwidth]{./images/loss_yubing.eps} 
-	 \caption {The results of Poisson Equation}
+	 \caption{The Results of Poisson Equation}
 	 \label{3.2a}
 \end{figure}
 
 Same as before, the color depth in the graph reflects the absolute error from the exact value.
 
 \section{Conclusion and Discussions}
-
-In this project report, we demonstrate that our method is simple but effective when solving a certain series of PDEs. What's more, we can achieve higher accuracy with proper improvement as follows:
-
-\begin{enumerate}
-\item
-%I don't know how to descibe (\delta u - f) !!
-Add a regularization term to punish the norm of lapacian operator. 
-\item
-Adjust loss coeffecients according to it's shift from  extreme value. We call it \emph{adaptive} method.
-\item
-Introduce reinforcement learning to adjust the adaptive coeffecients.
-\end{enumerate}
-
-While having achieved fairish results, there exist many drawbacks and probable amelioration which we will handle in the future work:
-
-%maybe more ``future work'' can be added here.
-\begin{enumerate}
-\item
-Our method is not robust enough for general application. Sometimes much tuning work is needed for a single PDE.
-\item
-
-\item
-
-\end{enumerate}
+\par In this project report, we demonstrate that deep Ritz method is simple but effective when solving a certain kind of PDEs. What's more, we proposed the self-adaptive sampling method and the actor-critic self-adaptive sampling method, which leads to great improvement on the results.
+\par While having achieve fairish results, there are still some drawbacks exist in our models, such as the deficiency of robustness in our model and too much work for tuning parameters. The ameliorations to these drawbacks may be left for future works.
 
 \section*{Acknowledgement}
 \par The authors would like thank Bing Yu for his discussion and interpretation to his paper \cite{yu2017deep}.
