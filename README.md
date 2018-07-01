@@ -2,4 +2,4 @@ This is our team project for *Deep Learning: Algorithm and Applications* in Spri
 
 This project focuses on discussion and amelioration of the [The Deep Ritz method: A deep learning-based numerical algorithm for solving variational problems](https://arxiv.org/abs/1710.00211) by Weinan E and Bing Yu.
 
-This repository consists of `code` folder and `report` folder. 
+This repository consists of `Code` folder and `Report` folder. 
